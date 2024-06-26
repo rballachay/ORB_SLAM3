@@ -119,10 +119,10 @@ target_link_libraries(${PROJECT_NAME}
 ${OpenCV_LIBS}
 ${EIGEN3_LIBS}
 ${Pangolin_LIBRARIES}
-${PROJECT_SOURCE_DIR}/Thirdparty/DBoW2/lib/libDBoW2.so
-${PROJECT_SOURCE_DIR}/Thirdparty/g2o/lib/libg2o.so
--lboost_serialization
--lcrypto
+${PROJECT_SOURCE_DIR}/Thirdparty/DBoW2/lib/libDBoW2.dylib
+${PROJECT_SOURCE_DIR}/Thirdparty/g2o/lib/libg2o.dylib
+/usr/local/Cellar/boost/1.85.0/lib/libboost_serialization.dylib
+/usr/local/opt/openssl/lib/libcrypto.dylib
 )
 
 # If RealSense SDK is found the library is added and its examples compiled
