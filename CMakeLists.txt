@@ -149,6 +149,10 @@ if(realsense2_FOUND)
     add_executable(rgbd_realsense_D435i
             Examples/RGB-D/rgbd_realsense_D435i.cc)
     target_link_libraries(rgbd_realsense_D435i ${PROJECT_NAME})
+
+    add_executable(rgbd_realsense_D415
+            Examples/RGB-D/rgbd_realsense_D415.cc)
+    target_link_libraries(rgbd_realsense_D415 ${PROJECT_NAME})
 endif()
 
 
