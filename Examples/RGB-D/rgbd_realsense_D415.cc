@@ -208,7 +208,7 @@ int main(int argc, char **argv) {
     std::cout << " Model = " << intrinsics_cam.model << std::endl;
 
     // Create SLAM system. It initializes all system threads and gets ready to process frames.
-    ORB_SLAM3::System SLAM(argv[1],argv[2],ORB_SLAM3::System::RGBD, false, 0, file_name);
+    ORB_SLAM3::System SLAM(argv[1],argv[2],ORB_SLAM3::System::RGBD, true, 0, file_name);
     float imageScale = SLAM.GetImageScale();
 
     double timestamp;
@@ -218,36 +218,42 @@ int main(int argc, char **argv) {
     double t_track = 0.f;
     rs2::frameset fs;
 
-    while (!SLAM.isShutDown())
-    {
-
-        fs = pipe.wait_for_frames();;
-
-        // Perform alignment here
-        auto processed = align.process(fs);
-
-        // Trying to get both other and aligned depth frames
-        rs2::video_frame color_frame = processed.first(align_to);
-        rs2::depth_frame depth_frame = processed.get_depth_frame();
-
-        im = cv::Mat(cv::Size(width_img, height_img), CV_8UC3, (void*)(color_frame.get_data()), cv::Mat::AUTO_STEP);
-        depth = cv::Mat(cv::Size(width_img, height_img), CV_16U, (void*)(depth_frame.get_data()), cv::Mat::AUTO_STEP);
-
-        /*cv::Mat depthCV_8U;
-        depthCV.convertTo(depthCV_8U,CV_8U,0.01);
-        cv::imshow("depth image", depthCV_8U);*/
-
-        if(imageScale != 1.f)
+    auto run = [&] () {
+        while (!SLAM.isShutDown())
         {
-            int width = im.cols * imageScale;
-            int height = im.rows * imageScale;
-            cv::resize(im, im, cv::Size(width, height));
-            cv::resize(depth, depth, cv::Size(width, height));
 
+            fs = pipe.wait_for_frames();;
+
+            // Perform alignment here
+            auto processed = align.process(fs);
+
+            // Trying to get both other and aligned depth frames
+            rs2::video_frame color_frame = processed.first(align_to);
+            rs2::depth_frame depth_frame = processed.get_depth_frame();
+
+            im = cv::Mat(cv::Size(width_img, height_img), CV_8UC3, (void*)(color_frame.get_data()), cv::Mat::AUTO_STEP);
+            depth = cv::Mat(cv::Size(width_img, height_img), CV_16U, (void*)(depth_frame.get_data()), cv::Mat::AUTO_STEP);
+
+            /*cv::Mat depthCV_8U;
+            depthCV.convertTo(depthCV_8U,CV_8U,0.01);
+            cv::imshow("depth image", depthCV_8U);*/
+
+            if(imageScale != 1.f)
+            {
+                int width = im.cols * imageScale;
+                int height = im.rows * imageScale;
+                cv::resize(im, im, cv::Size(width, height));
+                cv::resize(depth, depth, cv::Size(width, height));
+
+            }
+            // Pass the image to the SLAM system
+            SLAM.TrackRGBD(im, depth, timestamp); //, vImuMeas); depthCV
         }
-        // Pass the image to the SLAM system
-        SLAM.TrackRGBD(im, depth, timestamp); //, vImuMeas); depthCV
-    }
+    };
+    std::thread SlamThread(run);
+    SlamThread.detach();
+    SLAM.getViewer()->Run();
+
     cout << "System shutdown!\n";
 }
 
