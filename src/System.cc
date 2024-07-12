@@ -230,7 +230,7 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
     //if(false) // TODO
     {
         mpViewer = new Viewer(this, mpFrameDrawer,mpMapDrawer,mpTracker,strSettingsFile,settings_);
-        mptViewer = new thread(&Viewer::Run, mpViewer);
+        //mptViewer = new thread(&Viewer::Run, mpViewer);
         mpTracker->SetViewer(mpViewer);
         mpLoopCloser->mpViewer = mpViewer;
         mpViewer->both = mpFrameDrawer->both;
@@ -1261,6 +1261,10 @@ void System::SaveTrajectoryKITTI(const string &filename)
     f.close();
 }
 
+Viewer* System::getViewer(){
+    return mpViewer;
+}
+
 
 void System::SaveDebugData(const int &initIdx)
 {
@@ -1546,4 +1550,3 @@ string System::CalculateCheckSum(string filename, int type)
 }
 
 } //namespace ORB_SLAM
-
